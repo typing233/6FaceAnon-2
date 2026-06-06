@@ -16,7 +16,7 @@ def build():
         sys.exit(1)
 
     separator = ";" if platform.system() == "Windows" else ":"
-    data_spec = f"models/centerface.onnx{separator}models"
+    data_spec = f"{model_src}{separator}models"
 
     cmd = [
         sys.executable, "-m", "PyInstaller",
@@ -24,11 +24,15 @@ def build():
         "--name", "faceanon",
         "--add-data", data_spec,
         "--hidden-import", "onnxruntime",
+        "--hidden-import", "faceanon",
+        "--hidden-import", "faceanon.cli",
+        "--hidden-import", "faceanon.camera",
+        "--hidden-import", "faceanon.batch",
         "--collect-all", "onnxruntime",
         "--distpath", os.path.join(ROOT_DIR, "dist"),
         "--workpath", os.path.join(ROOT_DIR, "build", "pyinstaller_work"),
         "--specpath", os.path.join(ROOT_DIR, "build"),
-        os.path.join(ROOT_DIR, "faceanon", "cli.py"),
+        os.path.join(ROOT_DIR, "run.py"),
     ]
 
     print(f"Building for {platform.system()} ({platform.machine()})...")

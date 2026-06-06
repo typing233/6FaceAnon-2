@@ -1,38 +1,32 @@
 # -*- mode: python ; coding: utf-8 -*-
-"""PyInstaller spec file for faceanon standalone executable."""
+from PyInstaller.utils.hooks import collect_all
 
-import os
-import sys
+datas = [('/home/ubuntu/cc_zh/6FaceAnon-2/models/centerface.onnx', 'models')]
+binaries = []
+hiddenimports = ['onnxruntime', 'faceanon', 'faceanon.cli', 'faceanon.camera', 'faceanon.batch']
+tmp_ret = collect_all('onnxruntime')
+datas += tmp_ret[0]; binaries += tmp_ret[1]; hiddenimports += tmp_ret[2]
 
-block_cipher = None
-
-ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(SPECPATH)))
 
 a = Analysis(
-    [os.path.join(ROOT_DIR, 'faceanon', 'cli.py')],
-    pathex=[ROOT_DIR],
-    binaries=[],
-    datas=[
-        (os.path.join(ROOT_DIR, 'models', 'centerface.onnx'), 'models'),
-    ],
-    hiddenimports=['onnxruntime'],
+    ['/home/ubuntu/cc_zh/6FaceAnon-2/run.py'],
+    pathex=[],
+    binaries=binaries,
+    datas=datas,
+    hiddenimports=hiddenimports,
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
     excludes=[],
-    win_no_prefer_redirects=False,
-    win_private_assemblies=False,
-    cipher=block_cipher,
     noarchive=False,
+    optimize=0,
 )
-
-pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
+pyz = PYZ(a.pure)
 
 exe = EXE(
     pyz,
     a.scripts,
     a.binaries,
-    a.zipfiles,
     a.datas,
     [],
     name='faceanon',
