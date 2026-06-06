@@ -55,6 +55,13 @@ def nms(boxes: np.ndarray, scores: np.ndarray, threshold: float) -> np.ndarray:
     return np.array(keep, dtype=np.int32)
 
 
+def get_bundled_model_path() -> str:
+    """Resolve model path, checking PyInstaller bundle first."""
+    if getattr(sys, '_MEIPASS', None):
+        return os.path.join(sys._MEIPASS, 'models', 'centerface.onnx')
+    return os.path.join(os.path.dirname(__file__), '..', 'models', 'centerface.onnx')
+
+
 def ensure_model(model_path: str) -> str:
     """Ensure the CenterFace ONNX model exists, downloading if necessary."""
     if os.path.isfile(model_path):

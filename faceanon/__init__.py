@@ -7,6 +7,8 @@ from .config import (
 )
 from .datatypes import Detection, Track, FrameResult
 from .engine import FaceAnonEngine
+from .camera import CameraProcessor, CameraConfig
+from .batch import BatchProcessor, BatchConfig, BatchReport, FileResult
 
 __all__ = [
     "FaceAnonEngine",
@@ -18,4 +20,10 @@ __all__ = [
     "Detection",
     "Track",
     "FrameResult",
+    "CameraProcessor",
+    "CameraConfig",
+    "BatchProcessor",
+    "BatchConfig",
+    "BatchReport",
+    "FileResult",
 ]
