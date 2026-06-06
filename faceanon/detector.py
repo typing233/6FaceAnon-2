@@ -51,8 +51,7 @@ class CenterFaceDetector:
         offset0, offset1 = offset[0, 0], offset[0, 1]
 
         feat_h, feat_w = heatmap.shape
-        scale_h = img_h / feat_h
-        scale_w = img_w / feat_w
+        stride = inp_w / feat_w  # typically 4
 
         ys, xs = np.where(heatmap > self.config.score_threshold)
         if len(ys) == 0:
@@ -60,15 +59,22 @@ class CenterFaceDetector:
 
         scores = heatmap[ys, xs]
 
-        cx = (xs + offset1[ys, xs]) * scale_w
-        cy = (ys + offset0[ys, xs]) * scale_h
-        w = scale1[ys, xs] * scale_w
-        h = scale0[ys, xs] * scale_h
+        # Decode center in input image coords (CenterFace convention)
+        cx = (xs + offset1[ys, xs] + 0.5) * stride
+        cy = (ys + offset0[ys, xs] + 0.5) * stride
 
-        x1 = cx - w / 2
-        y1 = cy - h / 2
-        x2 = cx + w / 2
-        y2 = cy + h / 2
+        # Scale values are log-space: apply exp then multiply by stride
+        w = np.exp(scale1[ys, xs]) * stride
+        h = np.exp(scale0[ys, xs]) * stride
+
+        # Map from input coords to original image coords
+        rw = img_w / inp_w
+        rh = img_h / inp_h
+
+        x1 = (cx - w / 2) * rw
+        y1 = (cy - h / 2) * rh
+        x2 = (cx + w / 2) * rw
+        y2 = (cy + h / 2) * rh
 
         x1 = np.clip(x1, 0, img_w)
         y1 = np.clip(y1, 0, img_h)
@@ -85,8 +91,10 @@ class CenterFaceDetector:
                 lms_data = landmarks_raw[0, :, ys[idx], xs[idx]]
                 lms = np.zeros((5, 2), dtype=np.float32)
                 for j in range(5):
-                    lms[j, 0] = (lms_data[j * 2 + 1] + xs[idx]) * scale_w
-                    lms[j, 1] = (lms_data[j * 2] + ys[idx]) * scale_h
+                    lx = (lms_data[j * 2 + 1] + xs[idx] + 0.5) * stride * rw
+                    ly = (lms_data[j * 2] + ys[idx] + 0.5) * stride * rh
+                    lms[j, 0] = lx
+                    lms[j, 1] = ly
 
             detections.append(Detection(
                 bbox=boxes[idx],
